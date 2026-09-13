@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深刻地愛上一個人 自製對話卡生成器｜列印裁切版</title>
+<style>
+:root{--card-w:63mm;--card-h:88mm;--radius:3mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;background:#faf3f0;color:#222}
+header{background:#3d0c24;color:#fff;padding:18px 22px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;font-size:13px;color:#e8c9d8;line-height:1.6}
+.warn{background:#fff3cd;border:1px solid #e6c200;color:#5a4a00;padding:10px 14px;margin:14px auto;max-width:1000px;border-radius:8px;font-size:13px;line-height:1.7}
+.controls{max-width:1000px;margin:0 auto 20px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.controls h2{margin:0 0 10px;font-size:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0;font-size:14px}
+.row label{display:flex;align-items:center;gap:6px;background:#f7f7f7;border:1px solid #ddd;padding:6px 10px;border-radius:20px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0}
+.cat{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.6}
+.cat input{width:56px;padding:4px}
+textarea{width:100%;min-height:120px;font-size:13px;padding:8px;border-radius:8px;border:1px solid #ccc;line-height:1.7}
+select,button{font-size:14px;padding:7px 12px;border-radius:8px;border:1px solid #ccc}
+button{cursor:pointer}
+.btn-print{background:#c2185b;color:#fff;border:none;font-weight:700;padding:10px 22px;font-size:16px}
+.btn-print:hover{background:#880e4f}
+.stats{font-size:13px;color:#555;margin-top:8px;line-height:1.7}
+ol.how{font-size:13.5px;line-height:1.9;margin:8px 0 0;padding-left:20px}
+#printArea{display:flex;flex-direction:column;align-items:center;gap:18px;padding:10px 10px 60px}
+.page{width:210mm;min-height:287mm;background:#fff;padding:10mm 10mm;display:grid;grid-template-columns:repeat(3,var(--card-w));grid-auto-rows:var(--card-h);justify-content:center;align-content:start;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.page-title{grid-column:1/-1;font-size:11pt;color:#888;border-bottom:1px solid #ddd;padding-bottom:2mm;margin-bottom:2mm;height:8mm;display:flex;justify-content:space-between;align-items:end}
+.cell{position:relative;width:var(--card-w);height:var(--card-h)}
+.cell.cut .card{outline:.4pt dashed #999;outline-offset:-.4pt}
+.card{width:var(--card-w);height:var(--card-h);border-radius:var(--radius);overflow:hidden;position:relative;display:flex;flex-direction:column;background:#fff;border:.8mm solid var(--c,#c2185b);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card-top{background:var(--c);color:#fff;text-align:center;padding:2mm 2mm 1.5mm;line-height:1.2;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card-top .lv{font-size:4.6mm;font-weight:900;letter-spacing:1px}
+.card-top .en{font-size:2.4mm;letter-spacing:1px;opacity:.9}
+.card-mid{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:4mm 4mm;position:relative;background:#fff}
+.card-mid .q{font-size:4.2mm;font-weight:700;line-height:1.65;color:#222}
+.card-mid .wm{position:absolute;right:3mm;bottom:2mm;font-size:12mm;opacity:.08}
+.card-mid .puppy{position:absolute;left:50%;bottom:1.5mm;transform:translateX(-50%);width:26mm;height:14mm;opacity:.9;pointer-events:none}
+.card-mid .puppy img{width:100%;height:100%;object-fit:contain;display:block}
+.upbox{background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.7}
+.upbox img.thumb{width:44px;height:32px;object-fit:contain;background:#fff;border:1px solid #ddd;border-radius:6px;vertical-align:middle}
+.upbox input[type=file]{font-size:12px;max-width:170px}
+.upbox input[type=range]{width:110px;vertical-align:middle}
+.card-mid .q{position:relative;z-index:1;padding-bottom:9mm}
+.card-mid .num{position:absolute;left:3mm;top:2mm;font-size:2.6mm;color:#999;border:.4mm solid #ddd;border-radius:2mm;padding:.3mm 1.5mm}
+.card-bottom{padding:1.8mm;text-align:center;border-top:.5mm solid var(--c);font-size:2.5mm;color:#666;letter-spacing:1px;background:#fff}
+.card.back{background:#3d0c24;border-color:#3d0c24;color:#fff;align-items:center;justify-content:center;text-align:center}
+.card.back .b-h{font-size:24mm}
+.card.back .b-t{font-weight:900;letter-spacing:4px;font-size:5mm;margin-top:2mm}
+.card.back .b-s{font-size:2.5mm;color:#d9a9c4;letter-spacing:1px;margin-top:1mm;line-height:1.8}
+.card.info{padding:4mm;font-size:3.1mm;line-height:1.75;border-color:#333}
+.card.info h3{margin:0 0 1mm;font-size:4.4mm;text-align:center}
+@media print{@page{size:A4 portrait;margin:0}body{background:#fff}header,.controls,.warn{display:none!important}#printArea{padding:0;gap:0;display:block}.page{box-shadow:none;margin:0;min-height:297mm;page-break-after:always;break-after:page}.page:last-child{page-break-after:auto}}
+</style>
+</head>
+<body>
+<header>
+<h1>💌 深刻地愛上一個人 自製對話卡生成器 <small style="font-size:12px;color:#d9a9c4">列印裁切版</small></h1>
+<p>4 級 × 各 20 張 = 80 張｜63×88mm｜A4 每頁 3×3｜列印後裁剪即可夜聊<br>
+題庫為<strong>本站原創</strong>（非官方原文），僅供自家列印試玩，請勿商用販售，喜歡請支持正版。</p>
+</header>
+<div class="warn">⚠️ 原創提醒：官方卡牌文字有版權，這裡內建的是我幫你寫的 80 題原創題目，玩法概念相同但文字不同。你也可以在下方自行改寫成你們的故事。</div>
+<div class="controls">
+<h2>① 分級與張數</h2>
+<div class="grid">
+<div class="cat">💌 <b>♥ 吸引與悸動</b><br><small>Attraction｜心動細節</small><br>張數 × <input type="number" id="n0" value="20" min="0" max="30"><br>外框 <input type="color" id="c0" value="#EC407A"></div>
+<div class="cat">🪞 <b>♥♥ 自我與探索</b><br><small>Self｜價值觀內心</small><br>張數 × <input type="number" id="n1" value="20" min="0" max="30"><br>外框 <input type="color" id="c1" value="#8E24AA"></div>
+<div class="cat">💬 <b>♥♥♥ 互動與理解</b><br><small>Interaction｜傾聽表達</small><br>張數 × <input type="number" id="n2" value="20" min="0" max="30"><br>外框 <input type="color" id="c2" value="#1E88E5"></div>
+<div class="cat">🔒 <b>♥♥♥♥ 信任與成長</b><br><small>Trust｜未來脆弱夢想</small><br>張數 × <input type="number" id="n3" value="20" min="0" max="30"><br>外框 <input type="color" id="c3" value="#B71C1C"></div>
+</div>
+<div class="row">
+<label>整組統一外框 <input type="color" id="cAll" value="#C2185B"></label>
+<button id="btnOneColor">一鍵套用統一色</button>
+<button id="btnResetColor">恢復預設四色</button>
+</div>
+<div class="row">
+<label>卡片尺寸 <select id="cardSize"><option value="63x88" selected>63×88mm（標準牌套）</option><option value="59x92">59×92mm</option><option value="56x87">56×87mm</option></select></label>
+<label><input type="checkbox" id="optCut" checked> 裁切虛線</label>
+<label><input type="checkbox" id="optPuppy" checked> 線條小狗點綴（原創簡筆畫）</label>
+<label><input type="checkbox" id="optBacks"> 加印卡背頁</label>
+<label><input type="checkbox" id="optInfo" checked> 加印封面+規則卡</label>
+<label><input type="checkbox" id="optShuffle"> 洗牌（隨機順序）</label>
+</div>
+<h2>② 自訂題庫（可直接改，一行一題）</h2>
+<div class="row"><label>編輯分類 <select id="editCat"><option value="0">♥ 吸引與悸動</option><option value="1">♥♥ 自我與探索</option><option value="2">♥♥♥ 互動與理解</option><option value="3">♥♥♥♥ 信任與成長</option></select></label><button id="btnResetQ">恢復原創題庫</button></div>
+<textarea id="customQ"></textarea>
+<h2>③ 自傳圖片（自己找圖，只存瀏覽器不上傳）</h2>
+<div class="grid">
+<div class="upbox">🐶 <b>共用小狗圖</b>（沒設分級圖時全 deck 用這張）<br><input type="file" id="upGlobal" accept="image/*"> <button id="clrGlobal">清除</button><br><img id="thGlobal" class="thumb" style="display:none"></div>
+<div class="upbox">💌 <b>♥ 分級圖</b><br><input type="file" id="up0" accept="image/*"> <button id="clr0">清除</button><br><img id="th0" class="thumb" style="display:none"></div>
+<div class="upbox">🪞 <b>♥♥ 分級圖</b><br><input type="file" id="up1" accept="image/*"> <button id="clr1">清除</button><br><img id="th1" class="thumb" style="display:none"></div>
+<div class="upbox">💬 <b>♥♥♥ 分級圖</b><br><input type="file" id="up2" accept="image/*"> <button id="clr2">清除</button><br><img id="th2" class="thumb" style="display:none"></div>
+<div class="upbox">🔒 <b>♥♥♥♥ 分級圖</b><br><input type="file" id="up3" accept="image/*"> <button id="clr3">清除</button><br><img id="th3" class="thumb" style="display:none"></div>
+<div class="upbox">🎚️ <b>圖片大小 / 透明度</b><br>大小 <input type="range" id="imgSize" min="14" max="40" value="26"> <span id="imgSizeV">26mm</span><br>透明度 <input type="range" id="imgOp" min="30" max="100" value="90"> <span id="imgOpV">90%</span><br><small>建議找去背 PNG 白底圖，印出來最乾淨。請只用你有權利用的圖（自己拍、免費圖庫）。</small></div>
+</div>
+<h2>④ 卡背自訂（邊框＋圖案）</h2>
+<div class="grid">
+<div class="upbox">🖌️ <b>邊框 / 底色</b><br>邊框 <input type="color" id="bkBorder" value="#3d0c24"> 底色 <input type="color" id="bkBg" value="#3d0c24"><br>底紋 <select id="bkPattern"><option value="none">無</option><option value="dots">圓點</option><option value="stripes">斜紋</option><option value="hearts">愛心滿版</option></select></div>
+<div class="upbox">🖼️ <b>卡背圖</b>（蓋掉預設小狗）<br><input type="file" id="upBack" accept="image/*"> <button id="clrBack">清除</button><br><img id="thBack" class="thumb" style="display:none"><br><small>留空就用第③節的小狗圖。</small></div>
+<div class="upbox">✏️ <b>卡背文字</b><br>標題 <input type="text" id="bkTitle" value="深刻地愛上" style="width:120px"><br><label><input type="checkbox" id="bkIcon" checked> 顯示 💌 圖示</label><br>副標 <input type="text" id="bkSub" value="自製對話卡 · 僅供自用" style="width:160px"></div>
+<div class="upbox">📕 <b>封面+規則底圖</b><br>底色 <input type="color" id="cvBg" value="#ffffff"> <input type="file" id="upCover" accept="image/*"> <button id="clrCover">清除</button><br><img id="thCover" class="thumb" style="display:none"> 透明度 <input type="range" id="cvOp" min="10" max="60" value="25"> <span id="cvOpV">25%</span><br><small>底圖淡印在文字後面，不擋字。</small></div>
+</div>
+<div class="row">
+<button class="btn-print" onclick="window.print()">🖨️ 列印 / 另存為 PDF</button>
+<button id="btnRebuild">↻ 重新生成</button>
+</div>
+<div class="stats" id="stats"></div>
+<ol class="how">
+<li>確認張數，按重新生成。自訂題庫改完會自動套用。</li>
+<li>列印→<b>另存為PDF</b>→A4→邊界無→勾選背景圖形→100%。</li>
+<li>建議200g厚紙列印，沿虛線裁剪裝牌套。分四疊蓋著放，輪流抽、想聊就聊想停就停。</li>
+</ol>
+</div>
+<div id="printArea"></div>
+<script>
+const CATS=[
+{c:'♥ 吸引與悸動',en:'ATTRACTION & SPARK',color:'#EC407A',icon:'💌'},
+{c:'♥♥ 自我與探索',en:'SELF & DISCOVERY',color:'#8E24AA',icon:'🪞'},
+{c:'♥♥♥ 互動與理解',en:'INTERACTION & UNDERSTANDING',color:'#1E88E5',icon:'💬'},
+{c:'♥♥♥♥ 信任與成長',en:'TRUST & GROWTH',color:'#B71C1C',icon:'🔒'}];
+const DEFAULT_Q=[
+["第一次見到我，你最先注意到的是什麼？","你覺得我什麼時候最有魅力？","如果用一種味道形容我，會是什麼？","我們一起大笑的那次，你還記得嗎？","你最喜歡我哪個小動作？","什麼時候你會突然很想見我？","如果安排一場完美約會，你會帶我去哪？","你覺得我們最有火花的一次是什麼時候？","我做什麼事會讓你心跳加速？","你喜歡我怎麼稱呼你？","初次心動和現在的心動有什麼不同？","你會想和我一起嘗試什麼新鮮事？","描述一下你眼中我認真時的樣子。","哪首歌會讓你想起我？","你最想和我一起去旅行的地方是？","如果可以重來一次約會，你想重來哪次？","你覺得我們之間最特別的默契是？","什麼小事會讓你覺得被我吸引？","你希望我多做哪件讓你開心的事？","用三個詞形容你此刻的心動。"],
+["最近讓你最有成就感的一件事是？","你小時候的夢想是什麼？實現了嗎？","什麼事會讓你覺得真正放鬆？","你最欣賞自己哪個特質？","有沒有一句話一直支撐著你？","你感到孤單時通常會做什麼？","你覺得愛情裡最重要的是什麼？","描述一個塑造了現在的你的經歷。","你有什麼從沒跟我說過的小秘密？","工作和生活，你現在最想改變什麼？","你最想學會的一件事是？","什麼會讓你覺得自己被理解？","你生氣時最希望對方怎麼做？","你覺得自己最大的成長是什麼？","如果有一天完全自由，你想怎麼過？","你最害怕失去的是什麼？","什麼樣的稱讚對你最受用？","你如何面對壓力？想讓我怎麼陪你？","你覺得自己在愛裡是什麼樣的人？","十年後的你，會想對現在的你說什麼？"],
+["我們吵架時，你最希望我先說什麼？","你覺得我們溝通最順暢的時候是？","當我難過時，你怎麼察覺的？","你希望我多問你哪方面的事？","有什麼誤會是你一直想解釋的？","你覺得我的愛的語言是什麼？","你收到什麼樣的訊息會最開心？","我們需要多一點獨處還是多一點陪伴？","當意見不同時，你希望怎麼決定？","你覺得我最懂你的部分是？","有什麼事你希望我別再追問？","你喜歡驚喜還是先說好的計畫？","我們可以建立什麼屬於兩人的小儀式？","當你累的時候，我做什麼最加分？","你覺得我們最需要一起面對的問題是？","用一句話告訴我你現在的心情。","你希望下次約會多一點什麼？","如果可以許一個關於我們的願望？","你覺得道歉最重要的部分是？","我們最近哪次聊天讓你最舒服？"],
+["什麼時候你覺得最信任我？","有什麼脆弱是你願意只讓我看見的？","你對未來的家有什麼想像？","如果遇到困難，你希望我們怎麼分工？","你覺得承諾對你意味著什麼？","有什麼夢想你希望我陪你完成？","當你對未來不安時，我能說什麼？","你希望我們五年後是什麼樣子？","你願意為這段關係改變什麼、堅持什麼？","金錢觀不同時，你希望怎麼聊？","你覺得家人和伴侶該怎麼平衡？","如果我們要一起變老，最重要的是？","有什麼事你一直想問卻不敢問？","你覺得原諒需要具備什麼？","當我們都很忙時，怎麼維持溫度？","你希望在低潮時我怎麼接住你？","描述你心中最有安全感的畫面。","你想和我一起養成什麼習慣？","如果寫信給未來的我們，會寫什麼？","此刻，你最想對我說的一句真心話？"]];
+let custom=JSON.parse(JSON.stringify(DEFAULT_Q));
+const $=id=>document.getElementById(id);
+const editCat=$('editCat'),customQ=$('customQ');
+function loadEditor(){customQ.value=custom[+editCat.value].join('\n');}
+editCat.onchange=loadEditor;
+customQ.oninput=()=>{custom[+editCat.value]=customQ.value.split('\n').map(s=>s.trim()).filter(Boolean);build();};
+$('btnResetQ').onclick=()=>{custom=JSON.parse(JSON.stringify(DEFAULT_Q));loadEditor();build();};
+loadEditor();
+const PUPPY_SVG=`<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><g fill="none" stroke="#444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 55 Q22 36 42 36 L72 36 Q94 36 94 50 Q94 58 84 58 L32 58 Q22 58 22 55"/><circle cx="87" cy="30" r="13"/><path d="M78 24 Q70 12 76 7 Q82 9 82 21"/><path d="M95 21 Q101 9 95 5 Q89 9 89 21"/><circle cx="83" cy="29" r="1.8" fill="#444" stroke="none"/><circle cx="92" cy="29" r="1.8" fill="#444" stroke="none"/><path d="M85 36 Q88 38.5 91 36"/><path d="M16 50 Q9 45 11 38"/></g></svg>`;
+// 自傳圖：只存記憶體，不上傳網路
+const userImgs={global:null,cats:[null,null,null,null]};
+let imgW=26,imgOp=90;
+function bindUp(inputId,clrId,thId,setter){
+  const inp=$(inputId);
+  inp.addEventListener('change',e=>{
+    const f=e.target.files[0];if(!f)return;
+    const rd=new FileReader();
+    rd.onload=()=>{setter(rd.result);const th=$(thId);th.src=rd.result;th.style.display='inline-block';build();};
+    rd.readAsDataURL(f);
+  });
+  $(clrId).onclick=()=>{setter(null);inp.value='';const th=$(thId);th.src='';th.style.display='none';build();};
+}
+bindUp('upGlobal','clrGlobal','thGlobal',v=>userImgs.global=v);
+for(let i=0;i<4;i++)bindUp('up'+i,'clr'+i,'th'+i,v=>userImgs.cats[i]=v);
+let BACK_IMG=null;
+bindUp('upBack','clrBack','thBack',v=>BACK_IMG=v);
+let INFO_IMG=null;
+bindUp('upCover','clrCover','thCover',v=>INFO_IMG=v);
+$('cvOp').oninput=e=>{$('cvOpV').textContent=e.target.value+'%';build();};
+$('cvBg').addEventListener('change',build);
+['bkBorder','bkBg','bkPattern','bkIcon'].forEach(id=>$(id).addEventListener('change',build));
+['bkTitle','bkSub'].forEach(id=>$(id).addEventListener('input',build));
+$('imgSize').oninput=e=>{imgW=+e.target.value;$('imgSizeV').textContent=imgW+'mm';build();};
+$('imgOp').oninput=e=>{imgOp=+e.target.value;$('imgOpV').textContent=imgOp+'%';build();};
+function puppyFor(ci,isBack){
+  if(!($('optPuppy')&&$('optPuppy').checked))return '';
+  const custom=userImgs.cats[ci]||userImgs.global;
+  const style=`width:${isBack?34:imgW}mm;${isBack?'':'height:'+Math.round(imgW*0.54)+'mm;'}opacity:${imgOp/100}`;
+  if(custom&&isBack)return `<div style="width:34mm;height:19mm;margin:3mm auto 0;opacity:${imgOp/100}"><img src="${custom}" style="width:100%;height:100%;object-fit:contain;display:block"></div>`;
+  if(custom)return `<div class="puppy" style="${style}"><img src="${custom}"></div>`;
+  if(isBack)return `<div style="width:34mm;margin:3mm auto 0;opacity:.95">${PUPPY_SVG.replaceAll('#444','#fff')}</div>`;
+  return `<div class="puppy" style="${style}">${PUPPY_SVG}</div>`;
+}
+function cardHTML(ci,qi,text){
+const cat=CATS[ci];
+const puppy=puppyFor(ci,false);
+return `<div class="cell ${$('optCut').checked?'cut':''}"><div class="card" style="--c:${cat.color}">
+<div class="card-top"><div class="lv">${cat.icon} ${cat.c}</div><div class="en">${cat.en}</div></div>
+<div class="card-mid"><span class="num">${cat.icon.replace(/[^♥]/g,'')||'♥'}-${String(qi+1).padStart(2,'0')}</span><div class="q">${text}</div><div class="wm">${cat.icon}</div>${puppy}</div>
+<div class="card-bottom">深刻地愛上一個人 · 自製對話卡 · ${ci+1}/4</div></div></div>`;
+}
+function backHTML(){
+const bd=$('bkBorder').value,bg=$('bkBg').value,pat=$('bkPattern').value;
+const title=$('bkTitle').value||'深刻地愛上',sub=$('bkSub').value||'';
+const showIcon=$('bkIcon').checked;
+const patCSS=pat==='dots'?'background-image:radial-gradient(rgba(255,255,255,.25) 1.2mm, transparent 1.3mm);background-size:7mm 7mm;':pat==='stripes'?'background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 2mm,transparent 2mm 5mm);':pat==='hearts'?'background-image:url(&quot;data:image/svg+xml,'+encodeURIComponent('<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><text x=%2210%22 y=%2240%22 font-size=%2230%22 opacity=%220.25%22>💌</text></svg>')+'%22);background-size:14mm 14mm;':'';
+let mid='';
+if(BACK_IMG)mid=`<div style="width:40mm;height:28mm;margin:3mm auto 0;opacity:${imgOp/100}"><img src="${BACK_IMG}" style="width:100%;height:100%;object-fit:contain;display:block"></div>`;
+else mid=puppyFor(0,true);
+return `<div class="cell ${$('optCut').checked?'cut':''}"><div class="card back" style="border-color:${bd};background:${bg};${patCSS}">${showIcon?'<div class="b-h">💌</div>':''}<div class="b-t">${title}</div>${mid}<div class="b-s">MORE THAN LOVE · DIY<br>${sub}</div></div></div>`;}
+function infoHTML(){
+const cvBg=$('cvBg').value, cvOp=(+$('cvOp').value||25)/100;
+const bgDiv=INFO_IMG?`<div style="position:absolute;inset:0;background:url(${INFO_IMG}) center/cover no-repeat;opacity:${cvOp}"></div>`:'';
+const wrapStyle=`position:relative;background:${cvBg};`;
+const fgStyle=`position:relative;z-index:1;`;
+return `
+<div class="cell cut"><div class="card info" style="${wrapStyle}">${bgDiv}<div style="${fgStyle}"><h3>💌 深刻地愛上一個人<br><small>自製對話卡</small></h3><b>內容：</b>♥吸引悸動 / ♥♥自我探索 / ♥♥互動理解 / ♥♥♥♥信任成長<br><b>人數：</b>2～8人，伴侶、曖昧、紀念日夜聊都適合。<br><b>玩法：</b>四疊分開放，從♥開始輪流抽、念出並回答。想聊就聊、想停就停，可換卡或請人代答。<br><small>每題建議5分鐘，氣氛對了再進下一級。</small></div></div></div>
+<div class="cell cut"><div class="card info" style="${wrapStyle}">${bgDiv}<div style="${fgStyle}"><h3>✂️ 列印裁切</h3>1. 列印→另存PDF：A4、邊界無、背景圖形開、100%。<br>2. 200g厚紙+63×88牌套。<br>3. 沿虛線裁剪。<br>4. 卡背頁雙面短邊翻轉列印。<br><br><small>題庫為原創，僅供自用，請支持正版。</small></div></div></div>`;}
+function build(){
+const dims={'63x88':[63,88],'59x92':[59,92],'56x87':[56,87]}[$('cardSize').value];
+document.documentElement.style.setProperty('--card-w',dims[0]+'mm');
+document.documentElement.style.setProperty('--card-h',dims[1]+'mm');
+const ns=[+$('n0').value||0,+$('n1').value||0,+$('n2').value||0,+$('n3').value||0];
+let deck=[];
+for(let ci=0;ci<4;ci++){const pool=custom[ci].length?custom[ci]:DEFAULT_Q[ci];const n=Math.min(ns[ci],30);for(let i=0;i<n;i++)deck.push({ci,qi:i%pool.length,text:pool[i%pool.length]});}
+if($('optShuffle').checked){for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}}
+const area=$('printArea');area.innerHTML='';const per=9;let no=0;
+const np=t=>{no++;const p=document.createElement('div');p.className='page';p.innerHTML=`<div class="page-title"><span>${t}</span><span>P.${no} · ${dims[0]}×${dims[1]}mm</span></div>`;area.appendChild(p);return p;};
+if($('optInfo').checked){const p=np('封面 + 規則');p.innerHTML+=infoHTML();for(let i=0;i<7;i++)p.innerHTML+=`<div class="cell"></div>`;}
+let page=null;deck.forEach((c,i)=>{if(i%per===0)page=np(`卡面 ${Math.floor(i/per)+1} / Front`);page.innerHTML+=cardHTML(c.ci,c.qi,c.text);});
+if(page&&deck.length%per!==0)for(let i=0;i<per-(deck.length%per);i++)page.innerHTML+=`<div class="cell"></div>`;
+if(!deck.length){const p=np('卡面');p.innerHTML+=`<div style="grid-column:1/-1;text-align:center;color:#999;padding:20mm">張數皆為0</div>`;}
+if($('optBacks').checked&&deck.length){let bp=null;for(let i=0;i<deck.length;i++){if(i%per===0)bp=np(`卡背 ${Math.floor(i/per)+1} / Back`);bp.innerHTML+=backHTML();}if(deck.length%per!==0)for(let i=0;i<per-(deck.length%per);i++)bp.innerHTML+=`<div class="cell"></div>`;}
+$('stats').innerHTML=`目前：${ns.map((n,i)=>CATS[i].icon+n).join('　')}　<b>共 ${ns.reduce((a,b)=>a+b,0)} 張</b>　約 ${Math.ceil(ns.reduce((a,b)=>a+b,0)/per)} 頁`;
+}
+$('btnRebuild').onclick=build;
+['cardSize','optCut','optBacks','optInfo','optPuppy'].forEach(id=>$(id).addEventListener('change',build));
+['n0','n1','n2','n3'].forEach(id=>$(id).addEventListener('change',build));
+$('optShuffle').addEventListener('change',build);
+const DEF_COLORS=['#EC407A','#8E24AA','#1E88E5','#B71C1C'];
+for(let i=0;i<4;i++)$('c'+i).addEventListener('input',e=>{CATS[i].color=e.target.value;build();});
+$('btnOneColor').onclick=()=>{const v=$('cAll').value;for(let i=0;i<4;i++){CATS[i].color=v;$('c'+i).value=v;}build();};
+$('btnResetColor').onclick=()=>{for(let i=0;i<4;i++){CATS[i].color=DEF_COLORS[i];$('c'+i).value=DEF_COLORS[i];}build();};
+build();
+</script>
+</body>
+</html>
